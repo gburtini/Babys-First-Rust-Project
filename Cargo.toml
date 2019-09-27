@@ -7,8 +7,14 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "^0.7.2"
+reqwest = "^0.9.20"
+libnotify = "^1.0.3"
 
 [[bin]]
 name = "rust-hello-world"
 path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"

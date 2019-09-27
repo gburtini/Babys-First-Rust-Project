@@ -1,35 +1,28 @@
-use rand::Rng;
-use std::cmp::Ordering;
-use std::io;
+extern crate libnotify;
+
+mod is_up;
+
+use is_up::{is_up, RequestVerb};
+use std::env;
+
+fn send_notification(url: &str) {
+    libnotify::init("rust-is-up").unwrap();
+    let n = libnotify::Notification::new(url, Some("URL is down!"), None);
+    n.set_urgency(libnotify::Urgency::Critical);
+    n.show().unwrap();
+    libnotify::uninit();
+}
 
 fn main() {
-    println!("Guess the number!");
+    let args: Vec<String> = env::args().collect();
 
-    let secret_number = rand::thread_rng().gen_range(1, 10);
+    // TODO: store configurations in a file.
 
-    loop {
-        println!("Please input your guess.");
+    let url = &args[1];
+    // TODO: validation and such.
 
-        let mut guess = String::new();
-
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("Failed to read line");
-
-        let guess: u32 = match guess.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue
-        };
-
-        match guess.cmp(&secret_number) {
-            Ordering::Equal => {
-                println!("You guessed: {} correctly!", guess);
-                break;
-            }
-            Ordering::Greater | Ordering::Less => println!(
-                "You guessed: {}, but the secret was {}",
-                guess, secret_number
-            ),
-        };
+    match is_up(url, RequestVerb::GET) {
+        Ok(res) => println!("{:#?}", res.elapsed),
+        Err(_) => send_notification(url),
     }
 }
