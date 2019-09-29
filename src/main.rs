@@ -1,28 +1,30 @@
-extern crate libnotify;
-
+mod configuration;
 mod is_up;
+mod notifications;
 
+use configuration::load_configuration;
 use is_up::{is_up, RequestVerb};
-use std::env;
-
-fn send_notification(url: &str) {
-    libnotify::init("rust-is-up").unwrap();
-    let n = libnotify::Notification::new(url, Some("URL is down!"), None);
-    n.set_urgency(libnotify::Urgency::Critical);
-    n.show().unwrap();
-    libnotify::uninit();
-}
+use notifications::send_notification;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    // let args: Vec<String> = env::args().collect();
+    // let url = &args[1];
+    // if let Err(_) = Url::parse(url) {
+    //     panic!("Invalid URL.");
+    // };
 
-    // TODO: store configurations in a file.
+    // TODO: add commander style code to add and remove configurations.
+    // TODO: add tests.
 
-    let url = &args[1];
-    // TODO: validation and such.
+    // load configurations in a file as JSON.
+    let configuration = load_configuration();
 
-    match is_up(url, RequestVerb::GET) {
-        Ok(res) => println!("{:#?}", res.elapsed),
-        Err(_) => send_notification(url),
+    // TODO: parallelize multiple requests.
+    for monitor_rule in configuration.rules.iter() {
+        match is_up(&monitor_rule.url, RequestVerb::GET) {
+            // TODO: handle bad status codes.
+            Ok(res) => println!("{:#?} {:#?}", monitor_rule.url, res.elapsed),
+            Err(_) => send_notification(&monitor_rule.url),
+        }
     }
 }

@@ -1,0 +1,6 @@
+{
+  "rules": [
+    { "url": "https://news.ycombinator.com/" },
+    { "url": "https://reddit.com/" }
+  ]
+}

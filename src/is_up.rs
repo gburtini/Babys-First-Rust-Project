@@ -5,8 +5,8 @@ use std::time::{Duration, Instant};
 
 pub struct MonitorResult {
     pub elapsed: Duration,
-    pub status: Option<reqwest::StatusCode>,
-    pub body: Option<String>,
+    pub status: reqwest::StatusCode,
+    pub body: String,
 }
 
 pub enum RequestVerb {
@@ -64,7 +64,7 @@ pub fn is_up(url: &str, request_verb: RequestVerb) -> Result<MonitorResult, Stri
     // if it succeeded, return the time and any other metadata.
     return Ok(MonitorResult {
         elapsed: now.elapsed(),
-        status: Some(res.status()),
-        body: Some(body),
+        status: res.status(),
+        body: body,
     });
 }
