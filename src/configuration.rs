@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fs;
 
-use std::env;
-use url::Url;
+// use std::env;
+// use url::Url;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MonitorRule {
