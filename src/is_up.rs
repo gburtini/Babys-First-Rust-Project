@@ -68,3 +68,13 @@ pub fn is_up(url: &str, request_verb: RequestVerb) -> Result<MonitorResult, Stri
         body: body,
     });
 }
+
+use crate::notifications::send_notification;
+use crate::configuration::MonitorRule;
+pub fn run_check(rule: &MonitorRule) {
+    match is_up(&rule.url, RequestVerb::GET) {
+        // TODO: handle bad status codes.
+        Ok(res) => println!("{:#?} {:#?}", rule.url, res.elapsed),
+        Err(_) => send_notification(&rule.url),
+    }
+}
