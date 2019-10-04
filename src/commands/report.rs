@@ -1,8 +1,8 @@
-use crate::is_up::{is_up, RequestVerb};
-use crate::configuration::{MonitorConfiguration};
+use crate::configuration::MonitorConfiguration;
+use crate::is_up::{is_up_with_body, RequestVerb};
 use csv::Writer;
 
-pub fn report(configuration : MonitorConfiguration) {
+pub fn report(configuration: MonitorConfiguration) {
     let mut writer = Writer::from_writer(vec![]);
     writer
         .write_record(&["url", "method", "seconds", "status", "bytes"])
@@ -10,13 +10,16 @@ pub fn report(configuration : MonitorConfiguration) {
         .expect("CSV writer error");
     for monitor_rule in configuration.rules.iter() {
         // TODO: need to figure out how to represent the response type still.
-        let result = match is_up(&monitor_rule.url, RequestVerb::GET) {
+        let result = match is_up_with_body(&monitor_rule.url, RequestVerb::GET) {
             Ok(result) => [
                 String::from(&monitor_rule.url),
                 String::from("GET"), // TODO: figure out how to serialize an ENUM elegantly.
                 result.elapsed.as_secs().to_string(),
                 result.status.to_string(),
-                result.body.len().to_string() + " bytes",
+                match result.body {
+                    Some(r) => r.len().to_string() + " bytes",
+                    None => String::from("-"),
+                },
             ],
             Err(err) => [
                 String::from(&monitor_rule.url),

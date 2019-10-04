@@ -1,6 +1,9 @@
 {
   "rules": [
     { "url": "https://news.ycombinator.com/" },
-    { "url": "https://reddit.com/" }
+    { "url": "https://reddit.com/" },
+    { "url": "https://www.google.com/" },
+    { "url": "https://www.cnn.com/" },
+    { "url": "https://www.ycombinator.com/" }
   ]
 }

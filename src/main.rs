@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate prettytable;
+extern crate rayon;
 
 mod cli;
 mod commands;
@@ -8,22 +9,18 @@ mod is_up;
 mod notifications;
 
 use cli::build_cli;
-use configuration::load_configuration;
+use configuration::{
+    load_configuration, mutate_configuration, MonitorRule, MutationRule, MutationRuleType,
+};
 
 fn main() {
     let app = build_cli();
     let matches = app.get_matches();
 
-    let config = || {
-        // TODO: consider whether a closure here is rusty? Think about how this will expand to pushing all the CLI functions to a new file.
-        // The alternative is to read config_path every time and call load_config when necessary.
-        let config_path = matches.value_of("config").unwrap_or("monitor.json");
-        load_configuration(config_path.to_string())
-    };
-
+    let config_path = matches.value_of("config").unwrap_or("monitor.json");
     match matches.subcommand() {
         ("run", _) => {
-            commands::run(config());
+            commands::run(load_configuration(config_path.to_string()));
         }
 
         ("once", Some(submatches)) => {
@@ -33,12 +30,12 @@ fn main() {
 
         ("list", _) => {
             // pretty-print the blob of configured rules
-            commands::list(config());
+            commands::list(load_configuration(config_path.to_string()));
         }
 
         ("report", _) => {
             // run the checks and output a CSV of response times and types.
-            commands::report(config());
+            commands::report(load_configuration(config_path.to_string()));
         }
         ("start", Some(_submatches)) => {
             // TODO: start a daemon that will run the checks on a schedule.
@@ -68,21 +65,47 @@ fn main() {
             // TODO: stop that daemon.
         }
 
-        ("add", Some(_submatches)) => {
-            // TODO: add a check to the checks file.
+        ("add", Some(submatches)) => {
+            // add a check to the checks file.
+            let url = submatches.value_of("url").expect("No URL provided.");
+            match mutate_configuration(
+                config_path.to_string(),
+                MutationRule {
+                    mutation: MutationRuleType::Add,
+                    rule: MonitorRule {
+                        url: url.to_string(),
+                    },
+                },
+            ) {
+                Ok(_) => println!("Successfully added rule."),
+                Err(e) => panic!(e),
+            };
         }
 
-        ("remove", Some(_submatches)) => {
-            // TODO: remove a check from the checks file by closest match with confirmation.
+        ("remove", Some(submatches)) => {
+            // remove a check from the checks file by exact match 
+            // TODO: add closest match with confirmation
+            
+            let url = submatches.value_of("url").expect("No URL provided.");
+            match mutate_configuration(
+                config_path.to_string(),
+                MutationRule {
+                    mutation: MutationRuleType::Remove,
+                    rule: MonitorRule {
+                        url: url.to_string(),
+                    },
+                },
+            ) {
+                Ok(_) => println!("Successfully removed rule."),
+                Err(e) => panic!(e),
+            };
         }
 
         ("generate-completions", Some(submatches)) => {
-            let shell = submatches.value_of("shell").expect("No shell provided.");
+            let shell = submatches.value_of("shell").unwrap_or("bash");
             commands::generate_completions(shell);
         }
 
         (_, _) => {}
     };
-
-    // TODO: add tests.
 }
