@@ -26,6 +26,8 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(SubCommand::with_name("remove").about("Remove a configured check").arg(Arg::with_name("url").help("The URL to be added.")))
         .subcommand(SubCommand::with_name("list").about("List all configured checks"))
         .subcommand(SubCommand::with_name("report").about("Produce a CSV response report"))
+        .subcommand(SubCommand::with_name("start").about("Starts daemon mode."))
+        .subcommand(SubCommand::with_name("stop").about("Stops daemon mode."))
         .subcommand(
             SubCommand::with_name("generate-completions").about("Generates completions, e.g., `is-up generate-completions bash > /usr/share/bash-completion/completions/is-up.bash`")
             .arg(Arg::with_name("shell").help("One of bash, fish, zsh, powershell or elvish."))

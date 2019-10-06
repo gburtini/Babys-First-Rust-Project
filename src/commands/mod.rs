@@ -12,3 +12,7 @@ pub use report::report;
 
 mod generate_completions;
 pub use generate_completions::generate_completions;
+
+mod mutators;
+pub use mutators::add;
+pub use mutators::remove;

@@ -9,9 +9,9 @@ mod is_up;
 mod notifications;
 
 use cli::build_cli;
-use configuration::{
-    load_configuration, mutate_configuration, MonitorRule, MutationRule, MutationRuleType,
-};
+use configuration::load_configuration;
+use std::fs;
+use std::process::Command;
 
 fn main() {
     let app = build_cli();
@@ -38,67 +38,37 @@ fn main() {
             commands::report(load_configuration(config_path.to_string()));
         }
         ("start", Some(_submatches)) => {
-            // TODO: start a daemon that will run the checks on a schedule.
-
-            // This probably isn't in the right place because:
-            // > Yes, in the process of daemonizing, the original (foreground) process exits, and a copy of it runs in the background.
-            // let daemonize = Daemonize::new()
-            //     .pid_file("/tmp/test.pid") // Every method except `new` and `start`
-            //     .chown_pid_file(true)      // is optional, see `Daemonize` documentation
-            //     .working_directory("/tmp") // for default behaviour.
-            //     .user("nobody")
-            //     .group("daemon") // Group name
-            //     .group(2)        // or group id.
-            //     .umask(0o777)    // Set umask, `0o027` by default.
-            //     .stdout(stdout)  // Redirect stdout to `/tmp/daemon.out`.
-            //     .stderr(stderr)  // Redirect stderr to `/tmp/daemon.err`.
-            //     .exit_action(|| println!("Executed before master process exits"))
-            //     .privileged_action(|| "Executed before drop privileges");
-
-            // match daemonize.start() {
-            //     Ok(_) => println!("Success, daemonized"),
-            //     Err(e) => eprintln!("Error, {}", e),
-            // }
+            let sleep_time = 100000; // millis
+            Command::new("./is-up-daemon")
+                .arg(sleep_time.to_string())
+                .arg("is-up")
+                .spawn()
+                .expect("failed to spawn daemon process");
         }
 
         ("stop", Some(_submatches)) => {
-            // TODO: stop that daemon.
+            let pid = fs::read_to_string("/tmp/is-up.pid").expect("PID file (/tmp/is-up.pid) could not be read. It is likely the daemon is not running.");
+            // TODO: validate format of PID?
+            Command::new("kill")
+                .arg(pid)
+                .output()
+                .expect("failed to kill");
+            fs::remove_file("/tmp/is-up.pid").expect(
+                "Killed binary but could not remove /tmp/is-up.pid. Please remove manually.",
+            );
         }
 
         ("add", Some(submatches)) => {
             // add a check to the checks file.
+            // TODO: these guys are broken because they are unable to write to the file.
             let url = submatches.value_of("url").expect("No URL provided.");
-            match mutate_configuration(
-                config_path.to_string(),
-                MutationRule {
-                    mutation: MutationRuleType::Add,
-                    rule: MonitorRule {
-                        url: url.to_string(),
-                    },
-                },
-            ) {
-                Ok(_) => println!("Successfully added rule."),
-                Err(e) => panic!(e),
-            };
+            commands::add(config_path, url);
         }
 
         ("remove", Some(submatches)) => {
-            // remove a check from the checks file by exact match 
-            // TODO: add closest match with confirmation
-            
+            // remove a check from the checks file by exact match
             let url = submatches.value_of("url").expect("No URL provided.");
-            match mutate_configuration(
-                config_path.to_string(),
-                MutationRule {
-                    mutation: MutationRuleType::Remove,
-                    rule: MonitorRule {
-                        url: url.to_string(),
-                    },
-                },
-            ) {
-                Ok(_) => println!("Successfully removed rule."),
-                Err(e) => panic!(e),
-            };
+            commands::remove(config_path, url);
         }
 
         ("generate-completions", Some(submatches)) => {

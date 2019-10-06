@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Giuseppe Burtini <giuseppe@burtini.ca>"]
 edition = "2018"
 description = "Monitors server uptime."
+default-run = "is-up"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -22,6 +23,10 @@ rayon = "1.2.0"
 [[bin]]
 name = "is-up"
 path = "src/main.rs"
+
+[[bin]]
+name = "is-up-daemon"
+path = "src/daemon.rs"
 
 [profile.release]
 opt-level = "z"
