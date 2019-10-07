@@ -1,6 +1,7 @@
 use daemonize::Daemonize;
 use std::env;
 use std::fs::File;
+use std::io::{self, Write};
 use std::process::Command;
 use std::{thread, time};
 
@@ -31,14 +32,15 @@ fn main() {
             let parent_binary = &args[2];
 
             loop {
-                // TODO: make sure there's no currently running check to prevent becoming a fork bomb.
                 // run checks.
-                let _output = Command::new(parent_binary)
+                let output = Command::new(parent_binary)
                     .arg("run")
                     .output()
                     .expect("failed to execute check process");
 
-                // handle output.
+                // handle output... stdout has already been redirected to a file
+                println!("status: {}", output.status);
+                io::stdout().write_all(&output.stdout).unwrap();
 
                 // sleep for configured amount of time.
                 thread::sleep(time::Duration::from_millis(*sleep_time));
