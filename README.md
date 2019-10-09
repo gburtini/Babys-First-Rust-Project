@@ -6,12 +6,12 @@ The purpose of this project is exclusively as an accelerated first dive into Rus
 
 ## Areas of Review
 
-General structure. From the file system, to the [src/commands/](commands/) directory, and bigger picture decisions like the daemon being separate binary (see: [src/daemon.rs](daemon.rs) and [Cargo.toml](Cargo.toml)).
+General structure. From the file system, to the [commands/](src/commands/) directory, and bigger picture decisions like the daemon being separate binary (see: [daemon.rs](src/daemon.rs) and [Cargo.toml](Cargo.toml)).
 
 ### Idiomatic Rust
 
-- In [src/is_up.rs](is_up.rs), I've made a few decisions I'm not proud of with respect to composability. A similar pattern in [src/configuration.rs](configuration.rs).
-- In [src/is_up.rs](is_up.rs), the `handler` function exists solely to turn a complex error type into a string. I don't love the pattern.
+- In [is_up.rs](src/is_up.rs), I've made a few decisions I'm not proud of with respect to composability. A similar pattern in [configuration.rs](src/configuration.rs).
+- In [is_up.rs](src/is_up.rs), the `handler` function exists solely to turn a complex error type into a string. I don't love the pattern.
 - Some challenges with the use of enums/abstract types. Looking for broad feedback on how to do that better.
 - Identify some sane rules-of-thumb for where to use `.expect`, `?` and `match`.
 - Appropriate file structure. Looking for idiomatic feedback/great projects to learn from here.
@@ -19,7 +19,7 @@ General structure. From the file system, to the [src/commands/](commands/) direc
 
 ### Language Features
 
-- Use of closures. In [src/main.rs](main.rs), I had initially used a closure to capture the config file, but it didn't feel very Rusty.
+- Use of closures. In [main.rs](src/main.rs), I had initially used a closure to capture the config file, but it didn't feel very Rusty.
 - Use of scoping rules like lifetimes. I have not wrapped my mind around lifetimes at all yet.
 
 ### Testing Culture
@@ -34,4 +34,4 @@ I've run into some challenges with writing adequate tests in Rust.
 ### Other
 
 - Use of the nightly build appears to be very common in Rust to enable certain compiler features (e.g., Mocktopus required it).
-- I'm finding a lot of loss of encapsulation problems. For example, [src/main.rs](main.rs) has the `extern` statements and the macros that are only used in other files.
+- I'm finding a lot of loss of encapsulation problems. For example, [main.rs](src/main.rs) has the `extern` statements and the macros that are only used in other files.
