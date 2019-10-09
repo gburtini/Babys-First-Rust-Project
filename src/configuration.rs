@@ -47,8 +47,7 @@ pub fn find_rule_from_rules(
 ) -> Result<usize, usize> {
     return current_rules
         .rules
-        .binary_search_by_key(&url, |rule| rule.url.to_string())
-
+        .binary_search_by_key(&url, |rule| rule.url.to_string());
 }
 pub fn mutate_configuration_from_rules(
     current_rules: MonitorConfiguration,
@@ -61,13 +60,14 @@ pub fn mutate_configuration_from_rules(
             new_rules.rules.push(change.rule);
         }
         MutationRuleType::Remove => {
-            let rule_index = find_rule_from_rules(&current_rules, change.rule.url.to_string()).expect("No rule matched");
+            let rule_index = find_rule_from_rules(&current_rules, change.rule.url.to_string())
+                .expect("No rule matched");
 
             new_rules.rules.remove(rule_index);
         }
     }
 
-    return Ok(current_rules);
+    return Ok(new_rules);
 }
 pub fn write_configuration(
     path: String,
@@ -76,9 +76,14 @@ pub fn write_configuration(
     let rules =
         serde_json::to_string(&config).expect("Configuration could not be serialized to JSON.");
     let mut file =
-        fs::File::open(path).expect("Could not open specified configuration file for updating");
+        fs::File::create(path).expect("Could not open specified configuration file for updating");
     match file.write_all(rules.as_bytes()) {
         Ok(_) => return Ok(config),
-        Err(_) => return Err("Failed to write to specified configuration file.".to_string()),
+        Err(e) => {
+            return Err(format!(
+                "Failed to write to specified configuration file ({})",
+                e.to_string()
+            ))
+        }
     }
 }
