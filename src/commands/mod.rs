@@ -17,6 +17,10 @@ mod mutators;
 pub use mutators::add;
 pub use mutators::remove;
 
+mod daemon;
+pub use daemon::start;
+pub use daemon::stop;
+
 #[cfg(test)]
 mod tests {
     const TEST_URL: &str = "https://crates.io/";
